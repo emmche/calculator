@@ -87,6 +87,8 @@ namespace CalculatorUITestFramework
                     moveToBackToFullViewVButton.MoveToElement(ExitAlwaysOnTopButton);
                     moveToBackToFullViewVButton.Perform();
                 }
+                // Wait for the tooltip to appear after hovering
+                System.Threading.Thread.Sleep(1000);
             }
             else
             {
