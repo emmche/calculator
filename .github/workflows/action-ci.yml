@@ -51,7 +51,7 @@ jobs:
   build:
     needs: defineBuilds
     name: Build
-    runs-on: windows-latest
+    runs-on: windows-latest-vs2026
     strategy:
       matrix:
         platform: ${{ fromJSON(needs.defineBuilds.outputs.platformList) }}
@@ -61,11 +61,11 @@ jobs:
     - uses: actions/checkout@v4
     - uses: microsoft/setup-msbuild@v2
       name: Setup msbuild
-    - uses: nuget/setup-nuget@v2
-      name: Use nuget 6.x
+    - uses: actions/setup-dotnet@v4
+      name: Install .NET 10 SDK
       with:
-        nuget-version: '6.x'
-    - run: nuget restore ./src/Calculator.sln
+        dotnet-version: '10.x'
+    - run: dotnet restore ./src/Calculator.slnx --verbosity detailed
       name: Restore nuget dependencies
     - run: |
         ./build/scripts/UpdateAppxManifestVersion.ps1 `
@@ -74,7 +74,7 @@ jobs:
       shell: pwsh
       name: Set version number in AppxManifest
     - run: |
-        msbuild ./src/Calculator.sln `
+        msbuild ./src/Calculator.slnx `
           -bl:${{ github.workspace }}/output/Calculator.binlog `
           -p:OutDir=${{ github.workspace }}\output\ `
           -p:Platform=${{ matrix.platform }} `
@@ -85,7 +85,7 @@ jobs:
           -t:Publish `
           -p:PublishDir=${{ github.workspace }}\output\publish\
       shell: pwsh
-      name: Build calculator.sln
+      name: Build Calculator.slnx
     - uses: actions/upload-artifact@v4
       name: Upload build outputs
       with:
@@ -98,7 +98,7 @@ jobs:
 
   unitTests:
     needs: [defineBuilds, build]
-    runs-on: windows-latest
+    runs-on: windows-latest-vs2026
     name: Run unit tests
     strategy:
       matrix:
@@ -106,6 +106,10 @@ jobs:
     env:
       testDir: ${{ github.workspace }}/download/CalculatorUnitTests/AppPackages/CalculatorUnitTests_Test
     steps:
+    - uses: actions/setup-dotnet@v4
+      name: Install .NET 10 SDK
+      with:
+        dotnet-version: '10.x'
     - uses: actions/download-artifact@v4
       name: Download build outputs
       with:
@@ -116,23 +120,27 @@ jobs:
       with:
         name: Tools-${{ matrix.platform }}
         path: ${{ github.workspace }}/download/tools
+    - uses: ilammy/msvc-dev-cmd@v1  # this is a workaround because microsoft/vstest-action is broken.
+      name: Setup dev tools
     - run: |
         ${{ github.workspace }}/download/tools/SignTestApp.ps1 -AppToSign ${{ env.testDir }}/CalculatorUnitTests.msix
       shell: pwsh
       name: Install test certificate
-    - uses: ilammy/msvc-dev-cmd@v1  # this is a workaround because microsoft/vstest-action is broken.
-      name: Setup dev tools
     - run: vstest.console.exe ${{ env.testDir }}/CalculatorUnitTests.msix /Platform:${{ matrix.platform }}
       name: Run unit tests
         
   uiTests:
     needs: build
-    runs-on: windows-latest
+    runs-on: windows-latest-vs2026
     name: Run UI tests (x64)
     env:
       appDir: ${{ github.workspace }}/download/Calculator/AppPackages/Calculator*_Test
       pubDir: ${{ github.workspace }}/download/publish
     steps:
+    - uses: actions/setup-dotnet@v4
+      name: Install .NET 10 SDK
+      with:
+        dotnet-version: '10.x'
     - uses: actions/download-artifact@v4
       name: Download build outputs
       with:
