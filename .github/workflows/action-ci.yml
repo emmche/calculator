@@ -27,7 +27,7 @@ jobs:
         id: platformList
         run: |
           if ($env:isPR -eq $false) {
-            'platformList=["x64", "x86", "ARM64"]' | Out-File $env:GITHUB_OUTPUT -Append
+            'platformList=["x64", "ARM64"]' | Out-File $env:GITHUB_OUTPUT -Append
             echo 'Build all platforms.'
           }
           else {
@@ -38,14 +38,7 @@ jobs:
       - name: Choose platforms for unit test
         id: unitTestPlatformList
         run: |
-          if ($env:isPR -eq $false){
-            'unitTestPlatformList=["x64", "x86"]' | Out-File $env:GITHUB_OUTPUT -Append
-            echo 'Test x64, x86'
-          }
-          else{
-            'unitTestPlatformList=["x64"]' | Out-File $env:GITHUB_OUTPUT -Append
-            echo 'Test x64'
-          }
+          'unitTestPlatformList=["x64"]' | Out-File $env:GITHUB_OUTPUT -Append
         shell: pwsh
 
   build:

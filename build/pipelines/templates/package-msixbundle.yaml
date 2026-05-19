@@ -11,13 +11,11 @@ jobs:
 - job: Package
   dependsOn:
     - Buildx64
-    - Buildx86
     - BuildARM64
   condition: |
     and
     (
       in(dependencies.Buildx64.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'),
-      in(dependencies.Buildx86.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'),
       in(dependencies.BuildARM64.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
     )
   pool:
@@ -29,7 +27,6 @@ jobs:
     StoreBrokerMediaRootPath: $(TEMP)\SBMedia
     StoreBrokerPackagePath: $(Build.ArtifactStagingDirectory)\storeBrokerPayload
     PackageX64: $[in(dependencies.Buildx64.result, 'Succeeded', 'SucceededWithIssues')]
-    PackageX86: $[in(dependencies.Buildx86.result, 'Succeeded', 'SucceededWithIssues')]
     PackageARM64: $[in(dependencies.BuildARM64.result, 'Succeeded', 'SucceededWithIssues')]
 
     ob_outputDirectory: $(Build.ArtifactStagingDirectory)\msixBundle
@@ -48,14 +45,6 @@ jobs:
       artifactName: drop-x64
       itemPattern: '**/*.msix'
       targetPath: $(Build.ArtifactStagingDirectory)\drop\x64
-
-  - task: DownloadPipelineArtifact@2
-    displayName: Download all .msix artifacts (x86)
-    condition: and(succeeded(), eq(variables.PackageX86, 'true'))
-    inputs:
-      artifactName: drop-x86
-      itemPattern: '**/*.msix'
-      targetPath: $(Build.ArtifactStagingDirectory)\drop\x86
 
   - task: DownloadPipelineArtifact@2
     displayName: Download all .msix artifacts (ARM64)

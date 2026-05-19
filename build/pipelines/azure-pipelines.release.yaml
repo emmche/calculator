@@ -18,7 +18,7 @@ variables:
   - name: versionMajor
     value: 11
   - name: versionMinor
-    value: 2511
+    value: 2605
   - name: versionBuild
     value: $[counter(format('{0}.{1}.*', variables['versionMajor'], variables['versionMinor']), 0)]
   - name: versionPatch
@@ -92,12 +92,6 @@ extends:
 
       - template: /build/pipelines/templates/build-single-architecture.yaml@self
         parameters:
-          platform: x86
-          isReleaseBuild: true
-          useReleaseAppxmanifest: true
-
-      - template: /build/pipelines/templates/build-single-architecture.yaml@self
-        parameters:
           platform: ARM64
           isReleaseBuild: true
           useReleaseAppxmanifest: true
@@ -108,18 +102,9 @@ extends:
           platform: x64
           runsettingsFileName: CalculatorUITests.release.runsettings
 
-      - template: /build/pipelines/templates/run-ui-tests.yaml@self
-        parameters:
-          platform: x86
-          runsettingsFileName: CalculatorUITests.release.runsettings
-
       - template: /build/pipelines/templates/run-unit-tests.yaml@self
         parameters:
           platform: x64
-
-      - template: /build/pipelines/templates/run-unit-tests.yaml@self
-        parameters:
-          platform: x86
 
       - template: /build/pipelines/templates/package-msixbundle.yaml@self
         parameters:
