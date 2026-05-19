@@ -5,6 +5,7 @@
 parameters:
   signBundle: false
   createStoreBrokerPackages: false
+  includeX86: false
   makeAppx: C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\MakeAppx.exe
 
 jobs:
@@ -12,6 +13,8 @@ jobs:
   dependsOn:
     - Buildx64
     - BuildARM64
+    - ${{ if eq(parameters.includeX86, true) }}:
+      - Buildx86
   condition: |
     and
     (
@@ -28,6 +31,8 @@ jobs:
     StoreBrokerPackagePath: $(Build.ArtifactStagingDirectory)\storeBrokerPayload
     PackageX64: $[in(dependencies.Buildx64.result, 'Succeeded', 'SucceededWithIssues')]
     PackageARM64: $[in(dependencies.BuildARM64.result, 'Succeeded', 'SucceededWithIssues')]
+    ${{ if eq(parameters.includeX86, true) }}:
+      PackageX86: $[in(dependencies.Buildx86.result, 'Succeeded', 'SucceededWithIssues')]
 
     ob_outputDirectory: $(Build.ArtifactStagingDirectory)\msixBundle
     ${{ if eq(parameters.signBundle, true) }}:
@@ -45,6 +50,15 @@ jobs:
       artifactName: drop-x64
       itemPattern: '**/*.msix'
       targetPath: $(Build.ArtifactStagingDirectory)\drop\x64
+
+  - ${{ if eq(parameters.includeX86, true) }}:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download all .msix artifacts (x86)
+      condition: and(succeeded(), eq(variables.PackageX86, 'true'))
+      inputs:
+        artifactName: drop-x86
+        itemPattern: '**/*.msix'
+        targetPath: $(Build.ArtifactStagingDirectory)\drop\x86
 
   - task: DownloadPipelineArtifact@2
     displayName: Download all .msix artifacts (ARM64)

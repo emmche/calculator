@@ -85,6 +85,12 @@ extends:
 
       - template: /build/pipelines/templates/build-single-architecture.yaml@self
         parameters:
+          platform: x86
+          isReleaseBuild: true
+          useReleaseAppxmanifest: true
+
+      - template: /build/pipelines/templates/build-single-architecture.yaml@self
+        parameters:
           platform: ARM64
           isReleaseBuild: true
           useReleaseAppxmanifest: true
@@ -95,14 +101,24 @@ extends:
           platform: x64
           runsettingsFileName: CalculatorUITests.release.runsettings
 
+      - template: /build/pipelines/templates/run-ui-tests.yaml@self
+        parameters:
+          platform: x86
+          runsettingsFileName: CalculatorUITests.release.runsettings
+
       - template: /build/pipelines/templates/run-unit-tests.yaml@self
         parameters:
           platform: x64
+
+      - template: /build/pipelines/templates/run-unit-tests.yaml@self
+        parameters:
+          platform: x86
 
       - template: /build/pipelines/templates/package-msixbundle.yaml@self
         parameters:
           signBundle: true
           createStoreBrokerPackages: true
+          includeX86: true
 
       - ${{ if eq(parameters.publishStore, true) }}:
         - template: /build/pipelines/templates/release-store.yaml@self
