@@ -4,13 +4,6 @@
 # Store and the Windows image. This pipeline relies on Microsoft-internal resources to run.
 #
 
-schedules:
-- cron: "0 7 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - main
-
 trigger: none
 pr: none
 
